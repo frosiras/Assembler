@@ -1,0 +1,29 @@
+.model small
+	.stack 100h
+
+	.data
+	divisible dw 11
+	divider db 4
+	private db ?
+	balance db ?
+
+	.code
+	mov ax,@data
+	mov ds,ax
+
+	mov ax, divisible
+	xor cx,cx
+	xor dx,dx
+	mov cl, divider
+
+	p1: sub ax,cx
+		inc dl;
+		jae p1
+	dec dl
+	add ax,cx
+	mov ah, dl
+	mov balance, al
+	mov private, ah
+	mov ax, 4c00h
+	int 21h
+	end
