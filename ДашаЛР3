@@ -1,0 +1,126 @@
+; встаем на индекс 0,0
+; пока все столбцы не прошли cmp currentColumn, M
+; пока не прошли все строки cmp currentString, N
+;
+.model small
+
+.stack 100h
+
+.data
+        M dw 4
+        N dw 3
+
+        matrix  dw      3, 6, 5, 6
+                dw      2, 5, 8, 9
+                dw      7, 4, 1, 12
+        max dw ?
+        min dw ?
+        indexMax dw ?
+        indexMin dw ?
+        currentColumn dw 0
+        currentString dw 0
+        step dw 0
+        twow dw 2
+        twob db 2
+        startOfMatrix dw ?
+.code
+        mov     ax,     @data
+        mov     ds,     ax
+        lea     si,     matrix
+        mov startOfMatrix, si
+        ; initialize step
+        xor ax,ax
+        mov ax, M
+        mul twob
+        mov step, ax
+        ;
+
+        whileCurrentColumnNotEqualsM:
+            ; compare currentColumn and M
+            mov dx, currentColumn
+            mov cx, M
+            cmp cx, dx
+            je endWork
+            ;
+
+            ; first step
+            ; minIndex = maxIndex = firstElemOfColumn
+            ; max = min = matrix[0][0]
+            mov ax, [si]
+            push [si]
+            mov indexMax, si
+            mov indexMin, si
+            pop max
+            mov ax, max
+            mov min, ax
+            ;
+            inc di
+            ; inner loop for Strings
+            whileCurrentStringNotEqualsN:
+            ;
+                ; compare currentString and N
+                inc di
+                inc currentString
+                mov dx, currentString
+                mov cx, n
+                cmp dx, cx
+                je exchangeValue
+                ;
+                ; compare currValue and max/min
+                add si, step
+                mov ax, [si]
+                mov cx, max
+                cmp ax, cx
+                jg changeMax
+                jl changeMin
+                je whileCurrentStringNotEqualsN
+                changeMax:
+                    mov max,ax
+                    mov indexMax,si
+                    jg whileCurrentStringNotEqualsN
+                changeMin:
+                    mov min, ax
+                    mov indexMin, si
+                    jl whileCurrentStringNotEqualsN
+
+
+            ;
+
+        endWork:
+
+        mov ax, M
+        mul N
+        mov bx,ax
+        mov ax, M
+        mul twob
+        sub si, ax
+        p1: cmp bx, 0
+          mov ax, [si]
+          add si, twow
+          dec bx
+          jg p1
+        mov     ax,     4C00h
+        int     21h
+
+        exchangeValue:
+            push si
+            mov si, indexMax
+            push min
+            pop [si]
+            mov ax, [si]
+            mov si, indexMin
+            push max
+            pop [si]
+            mov ax, [si]
+            mov ax, N
+            dec ax
+            mov bx, step
+            mul bx
+            pop dx
+            sub dx, ax
+            add dx, twow
+            mov si, dx
+            inc currentColumn
+            mov currentString, 0
+        jmp whileCurrentColumnNotEqualsM
+end
